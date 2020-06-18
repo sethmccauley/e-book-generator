@@ -5,6 +5,10 @@ from datetime import datetime
 
 class Chapter(Resource):
     parser = reqparse.RequestParser()
+    parser.add_argument('chapter_id',
+        type=int,
+        required=False
+    )
     parser.add_argument('chapter_name',
         type=str,
         required=True,
@@ -51,7 +55,7 @@ class Chapter(Resource):
     def put(self, chapter_id):
         data = Chapter.parser.parse_args()
         chapter = ChapterModel.findById(chapter_id)
-
+        print(chapter_id)
         if chapter is None:
             chapter = ChapterModel(data["chapter_name"], data["book_id"], data["chapter_description"], data["chapter_order"])
         else:

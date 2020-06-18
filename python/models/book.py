@@ -35,9 +35,13 @@ class BookModel(db.Model):
         db.session.commit()
 
     @classmethod
+    def jsonList(cls, data):
+        return {"book_id": data[0], "book_title": data[1], "book_description": data[2]}
+
+    @classmethod
     def findById(cls, book_id):
         # SELECT * FROM books WHERE book_id = book_id LIMIT 1
-        return cls.query.filter_by(book_id=book_id)
+        return cls.query.filter_by(book_id=book_id).first()
 
     @classmethod
     def findByName(cls, book_title):
@@ -46,5 +50,4 @@ class BookModel(db.Model):
 
     @classmethod
     def queryAll(cls):
-        # Return non-chapter information from books (think about this)
-        return cls.query.all()
+        return [BookModel.jsonList(book) for book in cls.query.with_entities(BookModel.book_id, BookModel.book_title, BookModel.book_description).all()]

@@ -2,6 +2,7 @@ from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
 from models.book import BookModel
 from datetime import datetime
+import json
 
 class Book(Resource):
     parser = reqparse.RequestParser()
@@ -24,7 +25,7 @@ class Book(Resource):
 
         if book:
             return book.json(), 200
-        return {"message": "Book now found."}, 404
+        return {"message": "Book not found."}, 404
 
     def post(self):
         data = Book.parser.parse_args()
@@ -60,4 +61,4 @@ class Book(Resource):
 
 class BookList(Resource):
     def get(self):
-        return {"books": [book.json() for book in BookModel.queryAll()]}
+        return {"books": [book for book in BookModel.queryAll()]}
