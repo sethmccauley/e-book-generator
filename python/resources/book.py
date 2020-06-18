@@ -1,12 +1,14 @@
 from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
 from models.book import BookModel
+from datetime import datetime
 
 class Book(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('book_title',
         type=str,
-        required=True
+        required=True,
+        help="This is a required field."
     )
     parser.add_argument('book_description',
         type=str,
@@ -19,21 +21,20 @@ class Book(Resource):
     
     def get(self, book_id):
         book = BookModel.findById(book_id)
-        # Return whole book for displaying chapters/descriptions etc in viewer
+
         if book:
             return book.json(), 200
         return {"message": "Book now found."}, 404
 
     def post(self):
-        # Fetch json data sent will not error by default when not present or poorly formatted.
         data = Book.parser.parse_args()
-        # Database will auto-increment for us as well as populate create/update times.
+
         book = BookModel(data["book_title"], data["book_description"], data["book_genre"])
         try:
+            book.book_creation = datetime.now()
             book.saveToDb()
         except:
             return {"message": "An error occured creating the book."}, 500
-        # Response
         return book.json(), 201
 
     def delete(self, book_id):
@@ -52,17 +53,11 @@ class Book(Resource):
             book.book_title = data['book_title']
             book.book_description = data['book_description']
             book.book_genre = data['book_genre']
-            # Updated TimeStamp
+            book.book_update = datetime.now()
+
         book.saveToDb()
         return book.json()
 
 class BookList(Resource):
     def get(self):
-        connection = sqlite3.connect()
-        cursor = connection.cursor()
-        query = "SELECT * FROM books"
-        result = cursor.execute(query)
-        cursor.commit()
-        cursor.close()
-
-        return {"books": result}
+        return {"books": [book.json() for book in BookModel.queryAll()]}
